@@ -48,7 +48,12 @@ spec:
               value: "1.21.4"
             - name: MEMORY #memory for JVM heap 
               value: "1536M"
+            - name: RCON_PASSWORD_FILE 
+              value: "/etc/mc-secret/rcon_password"
             #same as the service port
+          envFrom: 
+            - configMapRef:
+                name: mc-config
           ports:
             - containerPort: 25565
             #all storage persists on this file path 
@@ -56,6 +61,9 @@ spec:
             - name: world-data
               mountPath: /data
               #These are the resources (min/max) pods are allowed to use 
+            - name: rcon-secret
+              mountPath: /etc/mc-secret
+              readOnly: true
           resources:
             requests:
               cpu: "500m"
@@ -64,6 +72,11 @@ spec:
               cpu: "1500m"
               memory: "2.5Gi"
   #Each pod gets its(different in statefulstate)
+      #For secret mounts 
+      volumes: 
+        - name: rcon-secret
+          secret: 
+            secretName: mc-secret
   volumeClaimTemplates:
     - metadata:
         name: world-data
