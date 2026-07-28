@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+    name: mc-proxy
+    namespace: minecraft
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mc-proxy
+  template: 
+    metadata:
+      labels:
+        app: mc-proxy
+    spec: 
+      initContainers:
+        - name: temp-container 
+          image: busybox:1.36
+          command: ["cp", "/config/velocity.toml", "/temp/velocity.toml"]
+          volumeMounts: 
+            - name: velocity-file #where config-map ReadOnly gets Mounted
+              mountPath: /config
+            - name: velocity-file-temp
+              mountPath: /temp  #where the velocity-file is newly mounted and copied  to be 
+      containers:
+        - name: mc-proxy
+          image: itzg/mc-proxy
+          env:
+            - name: TYPE
+              value: "VELOCITY"
+            - name: MEMORY 
+              value: "512m"
+          resources:
+              requests:
+                cpu: "250m"
+                memory: "640Mi"
+              limits:
+                memory: "800Mi"  
+          ports: 
+            - containerPort: 25577 
+          volumeMounts:
+            - name: velocity-file-temp
+              mountPath: /server
+            - name: velocity-secret
+              mountPath: /etc/velocity-secret
+      volumes: 
+        - name: velocity-file
+          configMap: 
+            name: mc-proxy-config   
+        - name: velocity-file-temp
+          emptyDir: {}
+        - name: velocity-secret
+          secret:
+            secretName: proxy-secret
+
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: proxy-service
+  namespace: minecraft
+spec:
+  selector: 
+    app: mc-proxy
+  type: ClusterIP
+  ports: 
+    - port: 25577
+

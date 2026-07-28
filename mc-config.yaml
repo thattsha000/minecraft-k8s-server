@@ -8,3 +8,5 @@ data:
     MAX_PLAYERS: "5"
     MOTD: "A server running on Kind Cluster"
     ENABLE_RCON: "true"
+    ONLINE_MODE: "false"
+    

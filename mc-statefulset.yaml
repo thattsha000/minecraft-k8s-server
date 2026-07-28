@@ -51,6 +51,8 @@ spec:
             - name: RCON_PASSWORD_FILE 
               value: "/etc/mc-secret/rcon_password"
             #same as the service port
+            - name: MODRINTH_PROJECTS
+              value: "dynmap:3.7-beta-8"
           envFrom: 
             - configMapRef:
                 name: mc-config
@@ -69,7 +71,6 @@ spec:
               cpu: "500m"
               memory: "2Gi"
             limits:
-              cpu: "1500m"
               memory: "2.5Gi"
   #Each pod gets its(different in statefulstate)
       #For secret mounts 
@@ -86,5 +87,4 @@ spec:
         resources:
           requests:
             storage: 5Gi
-
-
+    
