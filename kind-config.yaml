@@ -6,11 +6,20 @@ nodes:
   - role: worker
     extraPortMappings:
     #On a docker container so NodePorts cant be accessed directly from computer's network. You have to set up this to map containers ports to matching ports on our container 
-      - containerPort: 30565
-        hostPort: 30565
-        protocol: TCP
-        #dynamo on localhost port 
-      - containerPort: 30123
-        hostPort: 30123
-        protocol: TCP
+      - containerPort: 30565    # Minecraft (via proxy)
+        hostPort: 25565
+      - containerPort: 30123    # Dynmap survival
+        hostPort: 8123
+      - containerPort: 30124    # Dynmap creative
+        hostPort: 8124
+      - containerPort: 30300    # Grafana
+        hostPort: 3000
+      - containerPort: 30090    # Prometheus
+        hostPort: 9090
+      - containerPort: 30080    # ArgoCD, phase 6
+        hostPort: 8080
+      - containerPort: 30081    # spare
+        hostPort: 8081
+      - containerPort: 30082    # spare
+        hostPort: 8082
   - role: worker

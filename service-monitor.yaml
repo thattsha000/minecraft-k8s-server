@@ -1,0 +1,13 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata: 
+  name: mc-servicemonitor
+  namespace: minecraft
+  labels:
+    release: monitoring
+spec: 
+  selector: 
+    matchLabels: 
+      app: mc-exporter
+  endpoints:
+    - port: metrics

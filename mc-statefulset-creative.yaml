@@ -50,9 +50,9 @@ spec:
               value: "1G"
             - name: RCON_PASSWORD_FILE 
               value: "/etc/mc-secret/rcon_password"
-            #same as the service port
             - name: MODRINTH_PROJECTS
               value: "dynmap:3.7-beta-8"
+            #same as the service port
           envFrom: 
             - configMapRef:
                 name: mc-config-creative

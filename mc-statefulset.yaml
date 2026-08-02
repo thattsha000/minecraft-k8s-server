@@ -72,6 +72,28 @@ spec:
               memory: "2Gi"
             limits:
               memory: "2.5Gi"
+        - name: mc-exporter
+          image: ghcr.io/dirien/minecraft-exporter:0.24.0
+          env:
+            - name: MC_WORLD
+              value: "/data/world"
+            - name: MC_MOD_SERVER_STATS
+              value: papermc
+            - name: MC_RCON_PASSWORD
+              valueFrom:
+                secretKeyRef: 
+                  name: mc-secret
+                  key: rcon_password
+          ports:
+            - containerPort: 9150
+          volumeMounts:
+            - name: world-data
+              mountPath: /data
+          resources: 
+            requests: 
+              memory: "64Mi"
+            limits:
+              memory: "128Mi"
   #Each pod gets its(different in statefulstate)
       #For secret mounts 
       volumes: 

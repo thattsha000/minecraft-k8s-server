@@ -1,0 +1,33 @@
+prometheus:
+  service:
+    type: NodePort
+    nodePort: 30090
+  prometheusSpec:
+    retention: 3d
+    retentionSize: "2GiB"
+    resources:
+      requests:
+        cpu: "200m"
+        memory: 512Mi
+      limits:
+        memory: 1Gi
+
+grafana:
+  service:
+    type: NodePort
+    nodePort: 30300
+  resources:
+    requests:
+      cpu: "200m"
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+  livenessProbe:
+    initialDelaySeconds: 120
+    failureThreshold: 15
+  readinessProbe:
+    initialDelaySeconds: 60
+    failureThreshold: 15
+
+alertmanager:
+  enabled: false
