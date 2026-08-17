@@ -169,53 +169,7 @@ kubectl cp minecraft/mc-0:/data ./mc-0-backup
 
 ## Known issues
 
-- **Dynmap is currently unreachable.** `mc-nodeport` was repointed at the proxy, so
-  `localhost:30123` no longer routes to `mc-0`. Dynmap needs its own Service selecting
-  `app: minecraft`.
 - **`paper-global.yml` is manual.** See step 4.
 - **Only one backend server exists.** Velocity is configured for a single `survival`
   backend. Multiple worlds require separate StatefulSets, not `--replicas=3`, because a
   StatefulSet has one pod template and all replicas would be configured identically.
-
-## Gotchas discovered while building this
-
-Notes that cost real debugging time and are not obvious from the docs.
-
-**ConfigMap volumes are read-only at the kernel level.** There is no setting to change
-this. `itzg/mc-proxy` runs `chown` across `/server` on startup, which fails with
-`Read-only file system` if a ConfigMap is mounted there. The fix is an initContainer that
-copies the file into a writable `emptyDir`, which is then mounted at `/server`.
-
-**Velocity 4.x treats an absent config section differently from an empty one.** Omitting
-`[forced-hosts]` causes it to fall back to built-in example entries, then fail validation
-because those servers do not exist. An empty `[forced-hosts]` header fixes it.
-
-**`config-version = "2.8"` is a Velocity 3.x value** and this deployment runs a 4.x
-snapshot build. It currently works, but suspect this first if odd config behavior appears.
-
-**Do not set a CPU limit on the Minecraft server.** CFS quota freezes every thread when
-the budget is exhausted, which lands mid-tick and produces `Can't keep up!` warnings.
-Measured 1504 throttled periods out of 2973 with `limits.cpu: 1500m`. Removing the limit
-while keeping `requests.cpu` fixed it — TPS went to a flat 20.0.
-
-**`limits.memory` must exceed the JVM heap by a healthy margin.** `MEMORY` sets `-Xmx`,
-the heap only. Metaspace, JIT code cache, thread stacks, and GC structures add several
-hundred MiB on top, and all of it counts against the cgroup limit. Rule of thumb: heap
-x 1.25, plus 256 MiB.
-
-**World settings live in `level.dat`, not `server.properties`.** Difficulty is read from
-`server.properties` only when the world is first created. Changing it later requires the
-in-game `/difficulty` command; the ConfigMap value will be silently ignored.
-
-**kind over-reports node memory.** Each node is a Docker container with no memory limit,
-so all three report the full Docker VM allocation as `allocatable`. A 7.6 GiB VM looks
-like a 23 GiB cluster to the scheduler. Track actual limits yourself.
-
-**Minecraft version and Java version are coupled.** Leaving `VERSION` unpinned downloads
-the newest Paper build, which may require a newer JDK than the image tag provides. Pin
-both together.
-
-**`kubectl apply` succeeding does not mean the pod changed.** A crash-looping pod blocks
-its own replacement, because controllers will not replace a pod that never becomes Ready.
-Always follow an apply with `kubectl rollout status`, and use `kubectl delete pod` if it
-stalls.
