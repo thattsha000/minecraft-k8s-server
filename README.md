@@ -4,7 +4,6 @@
 A Paper Minecraft server running on a local multi-node `kind` cluster, fronted by a
 Velocity proxy, with Dynmap for live world mapping.
 
-Built as a learning project. Everything runs on one Windows laptop via Docker Desktop.
 
 ## Architecture
 
